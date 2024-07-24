@@ -24,11 +24,11 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
-	return 1920, 1080
+	return 606, 606
 }
 
 func main() {
-	ebiten.SetWindowSize(1920, 1080)
+	ebiten.SetWindowSize(606, 606)
 	ebiten.SetWindowTitle("Chess 2.0")
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		log.Fatal(err)

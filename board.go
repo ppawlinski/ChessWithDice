@@ -50,6 +50,7 @@ type Board struct {
 	fields        [maxDimensions][maxDimensions]*Field
 	possibleMoves []Coordinates
 	kingPosition  [ColorLength]Coordinates
+	direction     Direction
 }
 
 func (b *Board) Draw(screen *ebiten.Image) {

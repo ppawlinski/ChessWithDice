@@ -263,44 +263,300 @@ func (k *King) GetPossibleMoves(b *Board, direction Direction, current Coordinat
 			moves = append(moves, Coordinates{current.col, current.row - 1})
 		}
 	}
-	return moves
+
+	return FilterIllegalMoves(current, moves, b, currentColor)
 }
 
 func FilterIllegalMoves(position Coordinates, moves []Coordinates, board *Board, color Color) []Coordinates {
 	var legalMoves []Coordinates
 	for _, move := range moves {
-		if IsLegalMove(position, move, board, color) {
+		if !KingInCheck(position, move, board, color) {
 			legalMoves = append(legalMoves, move)
 		}
 	}
 	return legalMoves
 }
 
-func IsLegalMove(position Coordinates, move Coordinates, board *Board, color Color) bool {
+func KingInCheck(position Coordinates, move Coordinates, board *Board, color Color) bool {
 	kingPosition := board.kingPosition[color]
-	var direction int
-	legal := true
+	kingInCheck := false
+	blockedField := Coordinates{-1, -1}
 
-	if kingPosition.col == position.col && kingPosition.col != move.col {
-		if kingPosition.row-position.row > 0 {
-			direction = -1
-		} else {
-			direction = 1
+	if board.fields[position.col][position.row].piece.Type() == KingType {
+		kingPosition = move
+	} else {
+		blockedField = move
+	}
+
+	kingInCheck = AttackedByRookQueen(kingPosition, position, blockedField, board, color)
+	kingInCheck = kingInCheck || AttackedByBishopQueen(kingPosition, position, blockedField, board, color)
+	kingInCheck = kingInCheck || AttackedByPawn(kingPosition, position, blockedField, board, color)
+	kingInCheck = kingInCheck || AttackedByKnight(kingPosition, position, blockedField, board, color)
+	kingInCheck = kingInCheck || AttackedByKing(kingPosition, position, blockedField, board, color)
+
+	return kingInCheck
+}
+
+func AttackedByKing(kingPosition, freeField, blockedField Coordinates, b *Board, color Color) bool {
+	attacked := false
+	if kingPosition.col+1 < maxDimensions {
+		potentialField := b.fields[kingPosition.col+1][kingPosition.row]
+		if potentialField != nil && potentialField.piece.Piece().color != color && potentialField.piece.Type() == KingType {
+			attacked = true
+		}
+		if kingPosition.row+1 < maxDimensions {
+			potentialField := b.fields[kingPosition.col+1][kingPosition.row+1]
+			if potentialField != nil && potentialField.piece.Piece().color != color && potentialField.piece.Type() == KingType {
+				attacked = true
+			}
+		}
+		if kingPosition.row-1 >= 0 {
+			potentialField := b.fields[kingPosition.col+1][kingPosition.row-1]
+			if potentialField != nil && potentialField.piece.Piece().color != color && potentialField.piece.Type() == KingType {
+				attacked = true
+			}
+		}
+	}
+	if kingPosition.col-1 >= 0 {
+		potentialField := b.fields[kingPosition.col-1][kingPosition.row]
+		if potentialField != nil && potentialField.piece.Piece().color != color && potentialField.piece.Type() == KingType {
+			attacked = true
+		}
+		if kingPosition.row+1 < maxDimensions {
+			potentialField := b.fields[kingPosition.col-1][kingPosition.row+1]
+			if potentialField != nil && potentialField.piece.Piece().color != color && potentialField.piece.Type() == KingType {
+				attacked = true
+			}
+		}
+		if kingPosition.row-1 >= 0 {
+			potentialField := b.fields[kingPosition.col-1][kingPosition.row-1]
+			if potentialField != nil && potentialField.piece.Piece().color != color && potentialField.piece.Type() == KingType {
+				attacked = true
+			}
+		}
+	}
+	if kingPosition.row+1 < maxDimensions {
+		potentialField := b.fields[kingPosition.col][kingPosition.row+1]
+		if potentialField != nil && potentialField.piece.Piece().color != color && potentialField.piece.Type() == KingType {
+			attacked = true
+		}
+	}
+	if kingPosition.row-1 >= 0 {
+		potentialField := b.fields[kingPosition.col][kingPosition.row-1]
+		if potentialField != nil && potentialField.piece.Piece().color != color && potentialField.piece.Type() == KingType {
+			attacked = true
+		}
+	}
+	return attacked
+}
+
+func AttackedByKnight(kingPosition, freeField, blockedField Coordinates, board *Board, color Color) bool {
+	attacked := false
+
+	if kingPosition.col+2 < maxDimensions {
+		if kingPosition.row+1 < maxDimensions {
+			if board.fields[kingPosition.col+2][kingPosition.row+1] != nil &&
+				board.fields[kingPosition.col+2][kingPosition.row+1].piece.Piece().color != color &&
+				board.fields[kingPosition.col+2][kingPosition.row+1].piece.Type() == KnightType {
+				attacked = true
+			}
+		}
+		if kingPosition.row-1 >= 0 {
+			if board.fields[kingPosition.col+2][kingPosition.row-1] != nil &&
+				board.fields[kingPosition.col+2][kingPosition.row-1].piece.Piece().color != color &&
+				board.fields[kingPosition.col+2][kingPosition.row-1].piece.Type() == KnightType {
+				attacked = true
+
+			}
+		}
+	}
+	if kingPosition.col-2 >= 0 {
+		if kingPosition.row+1 < maxDimensions {
+			if board.fields[kingPosition.col-2][kingPosition.row+1] != nil &&
+				board.fields[kingPosition.col-2][kingPosition.row+1].piece.Piece().color != color &&
+				board.fields[kingPosition.col-2][kingPosition.row+1].piece.Type() == KnightType {
+				attacked = true
+			}
+		}
+		if kingPosition.row-1 >= 0 {
+			if board.fields[kingPosition.col-2][kingPosition.row-1] != nil &&
+				board.fields[kingPosition.col-2][kingPosition.row-1].piece.Piece().color != color &&
+				board.fields[kingPosition.col-2][kingPosition.row-1].piece.Type() == KnightType {
+				attacked = true
+			}
+		}
+	}
+	if kingPosition.col+1 < maxDimensions {
+		if kingPosition.row+2 < maxDimensions {
+			if board.fields[kingPosition.col+1][kingPosition.row+2] != nil &&
+				board.fields[kingPosition.col+1][kingPosition.row+2].piece.Piece().color != color &&
+				board.fields[kingPosition.col+1][kingPosition.row+2].piece.Type() == KnightType {
+				attacked = true
+			}
+		}
+		if kingPosition.row-2 >= 0 {
+			if board.fields[kingPosition.col+1][kingPosition.row-2] != nil &&
+				board.fields[kingPosition.col+1][kingPosition.row-2].piece.Piece().color != color &&
+				board.fields[kingPosition.col+1][kingPosition.row-2].piece.Type() == KnightType {
+				attacked = true
+			}
+		}
+	}
+	if kingPosition.col-1 >= 0 {
+		if kingPosition.row+2 < maxDimensions {
+			if board.fields[kingPosition.col-1][kingPosition.row+2] != nil &&
+				board.fields[kingPosition.col-1][kingPosition.row+2].piece.Piece().color != color &&
+				board.fields[kingPosition.col-1][kingPosition.row+2].piece.Type() == KnightType {
+				attacked = true
+			}
+		}
+		if kingPosition.row-2 >= 0 {
+			if board.fields[kingPosition.col-1][kingPosition.row-2] != nil &&
+				board.fields[kingPosition.col-1][kingPosition.row-2].piece.Piece().color != color &&
+				board.fields[kingPosition.col-1][kingPosition.row-2].piece.Type() == KnightType {
+				attacked = true
+			}
+		}
+	}
+	return attacked
+}
+
+func AttackedByPawn(kingPosition, freeField, blockedField Coordinates, board *Board, color Color) bool {
+	attacked := false
+	searchDirection := 1
+
+	if board.direction == Reversed {
+		searchDirection *= -1
+	}
+	if color == White {
+		searchDirection *= -1
+	}
+
+	if kingPosition.row+searchDirection >= 0 && kingPosition.row+searchDirection < maxDimensions {
+		if kingPosition.col-1 >= 0 {
+			field := board.fields[kingPosition.col-1][kingPosition.row+searchDirection]
+			if field != nil {
+				if field.piece.Type() == PawnType && field.piece.Piece().color != color {
+					attacked = true
+				}
+			}
 		}
 
-		for row := position.row + direction; row < maxDimensions || row >= 0; row += direction {
+		if kingPosition.col+1 < maxDimensions {
+			field := board.fields[kingPosition.col+1][kingPosition.row+searchDirection]
+			if field != nil {
+				if field.piece.Type() == PawnType && field.piece.Piece().color != color {
+					attacked = true
+				}
+			}
+		}
+	}
+	return attacked
+}
+
+func AttackedByBishopQueen(kingPosition, freeField, blockedField Coordinates, board *Board, color Color) bool {
+	attacked := false
+	for i := 1; kingPosition.col+i < maxDimensions && kingPosition.row+i < maxDimensions; i++ {
+		if (blockedField == Coordinates{kingPosition.col + i, kingPosition.row + i}) {
+			break
+		}
+		if (freeField == Coordinates{kingPosition.col + i, kingPosition.row + i}) {
+			continue
+		}
+		field := board.fields[kingPosition.col+i][kingPosition.row+i]
+		if field != nil {
+			if field.piece.Piece().color != color && (field.piece.Type() == BishopType || field.piece.Type() == QueenType) {
+				attacked = true
+			}
+			break
+		}
+	}
+	for i := 1; kingPosition.col-i >= 0 && kingPosition.row-i >= 0; i++ {
+		if (blockedField == Coordinates{kingPosition.col - i, kingPosition.row - i}) {
+			break
+		}
+		if (freeField == Coordinates{kingPosition.col - i, kingPosition.row - i}) {
+			continue
+		}
+		field := board.fields[kingPosition.col-i][kingPosition.row-i]
+		if field != nil {
+			if field.piece.Piece().color != color && (field.piece.Type() == BishopType || field.piece.Type() == QueenType) {
+				attacked = true
+			}
+			break
+		}
+	}
+	for i := 1; kingPosition.col+i < maxDimensions && kingPosition.row-i >= 0; i++ {
+		if (blockedField == Coordinates{kingPosition.col + i, kingPosition.row - i}) {
+			break
+		}
+		if (freeField == Coordinates{kingPosition.col + i, kingPosition.row - i}) {
+			continue
+		}
+		field := board.fields[kingPosition.col+i][kingPosition.row-i]
+		if field != nil {
+			if field.piece.Piece().color != color && (field.piece.Type() == BishopType || field.piece.Type() == QueenType) {
+				attacked = true
+			}
+			break
+		}
+	}
+	for i := 1; kingPosition.col-i >= 0 && kingPosition.row+i < maxDimensions; i++ {
+		if (blockedField == Coordinates{kingPosition.col - i, kingPosition.row + i}) {
+			break
+		}
+		if (freeField == Coordinates{kingPosition.col - i, kingPosition.row + i}) {
+			continue
+		}
+		field := board.fields[kingPosition.col-i][kingPosition.row+i]
+		if field != nil {
+			if field.piece.Piece().color != color && (field.piece.Type() == BishopType || field.piece.Type() == QueenType) {
+				attacked = true
+			}
+			break
+		}
+	}
+	return attacked
+}
+
+func AttackedByRookQueen(kingPosition, freeField, blockedField Coordinates, board *Board, color Color) bool {
+	attacked := false
+
+	for direction := 1; direction >= -1; direction -= 2 {
+		for row := kingPosition.row + direction; row < maxDimensions && row >= 0; row += direction {
+			if (blockedField == Coordinates{kingPosition.col, row}) {
+				break
+			}
+			if (freeField == Coordinates{kingPosition.col, row}) {
+				continue
+			}
 			field := board.fields[kingPosition.col][row]
 			if field != nil {
 				if field.piece.Piece().color != color && (field.piece.Type() == RookType || field.piece.Type() == QueenType) {
-					legal = false
+					attacked = true
 				}
 				break
 			}
 		}
 	}
 
-	//if kingPosition.row == position.row && kingPosition.row != move.row {
-	//}
+	for direction := 1; direction >= -1; direction -= 2 {
+		for col := kingPosition.col + direction; col < maxDimensions && col >= 0; col += direction {
+			if (blockedField == Coordinates{col, kingPosition.row}) {
+				break
+			}
+			if (freeField == Coordinates{col, kingPosition.row}) {
+				continue
+			}
+			field := board.fields[col][kingPosition.row]
+			if field != nil {
+				if field.piece.Piece().color != color && (field.piece.Type() == RookType || field.piece.Type() == QueenType) {
+					attacked = true
+				}
+				break
+			}
+		}
+	}
 
-	return legal
+	return attacked
 }
