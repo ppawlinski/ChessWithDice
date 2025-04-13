@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
-	"image/color"
+
+	"github.com/ppawlinski/ChessWithDice/assets"
+	"github.com/ppawlinski/ChessWithDice/config"
 
 	"github.com/hajimehoshi/ebiten"
 )
@@ -10,10 +12,6 @@ import (
 const (
 	maxDimensions = 8
 	tileOffset    = 1
-)
-
-var (
-	tileSize int = 75
 )
 
 type Coordinates struct {
@@ -54,23 +52,22 @@ type Board struct {
 }
 
 func (b *Board) Draw(screen *ebiten.Image) {
-	rect, _ := ebiten.NewImage(tileSize, tileSize, ebiten.FilterDefault)
-
+	var rect *ebiten.Image
 	for row := 0; row < maxDimensions; row++ {
 		for col := 0; col < maxDimensions; col++ {
 			if (row%2 == 1 && col%2 == 1) || (row%2 == 0 && col%2 == 0) {
-				rect.Fill(color.RGBA{117, 59, 12, 255})
+				rect = assets.Images.DarkSquare
 			} else {
-				rect.Fill(color.RGBA{196, 151, 114, 255})
+				rect = assets.Images.LightSquare
 			}
 			for i := 0; i < len(b.possibleMoves); i++ {
 				currentCoordinates := Coordinates{col, row}
 				if b.possibleMoves[i] == currentCoordinates {
-					rect.Fill(color.RGBA{255, 127, 80, 255})
+					rect = assets.Images.HighlightedSquare
 				}
 			}
-			x := col * (tileSize + tileOffset)
-			y := row * (tileSize + tileOffset)
+			x := col * (config.TileSize + tileOffset)
+			y := row * (config.TileSize + tileOffset)
 			drawOptions := ebiten.DrawImageOptions{}
 			drawOptions.GeoM.Translate(float64(x), float64(y))
 			screen.DrawImage(rect, &drawOptions)
@@ -79,8 +76,8 @@ func (b *Board) Draw(screen *ebiten.Image) {
 
 	for row := 0; row < maxDimensions; row++ {
 		for col := 0; col < maxDimensions; col++ {
-			x := col * (tileSize + tileOffset)
-			y := row * (tileSize + tileOffset)
+			x := col * (config.TileSize + tileOffset)
+			y := row * (config.TileSize + tileOffset)
 			piece := b.fields[col][row]
 			if piece != nil {
 				piece.piece.Draw(screen, x, y)
@@ -132,8 +129,8 @@ func (b *Board) HitCheck() (Coordinates, []Coordinates) {
 	resultCol := -1
 	resultRow := -1
 	x, y := ebiten.CursorPosition()
-	col := x / (tileSize + tileOffset)
-	row := y / (tileSize + tileOffset)
+	col := x / (config.TileSize + tileOffset)
+	row := y / (config.TileSize + tileOffset)
 	if x > 0 && y > 0 && col >= 0 && col < maxDimensions && row >= 0 && row < maxDimensions {
 		if b.fields[col][row] != nil {
 			resultCol = col
@@ -150,8 +147,8 @@ func (b *Board) HitCheck() (Coordinates, []Coordinates) {
 
 func (b *Board) DropCheck(draggedPiece Coordinates) {
 	x, y := ebiten.CursorPosition()
-	col := x / (tileSize + tileOffset)
-	row := y / (tileSize + tileOffset)
+	col := x / (config.TileSize + tileOffset)
+	row := y / (config.TileSize + tileOffset)
 
 	dropped := b.fields[draggedPiece.col][draggedPiece.row].piece.Piece()
 	dropped.SetDragOffset(0, 0)

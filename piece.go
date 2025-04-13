@@ -2,7 +2,8 @@ package main
 
 import (
 	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
+	"github.com/ppawlinski/ChessWithDice/assets"
+	"github.com/ppawlinski/ChessWithDice/config"
 )
 
 type Color int8
@@ -42,18 +43,16 @@ func NewPiece(color Color) *Piece {
 	}
 }
 
-func (p *Piece) Draw(screen *ebiten.Image, x int, y int, path string) {
-	filter := ebiten.FilterDefault
+func (p *Piece) Draw(screen *ebiten.Image, x int, y int, image *ebiten.Image) {
 	options := ebiten.DrawImageOptions{}
-	image, _, _ := ebitenutil.NewImageFromFile(path, filter)
 	imageX, imageY := image.Size()
-	offsetX := (tileSize - imageX) / 2
-	offsetY := (tileSize - imageY) / 2
+	offsetX := (config.TileSize - imageX) / 2
+	offsetY := (config.TileSize - imageY) / 2
 	if !(p.dragOffset.x == 0 && p.dragOffset.y == 0) {
 		x = p.dragOffset.x
 		y = p.dragOffset.y
-		offsetX -= tileSize / 2
-		offsetY -= tileSize / 2
+		offsetX -= config.TileSize / 2
+		offsetY -= config.TileSize / 2
 	}
 	options.GeoM.Translate(float64(x+offsetX), float64(y+offsetY))
 	screen.DrawImage(image, &options)
@@ -72,12 +71,12 @@ func (p *Pawn) Move(Coordinates) {
 }
 
 func (p *Pawn) Draw(screen *ebiten.Image, x int, y int) {
-	path := "images\\pawn.png"
+	image := assets.Images.BlackPawn
 	if p.piece.color == White {
-		path = "images\\pawnWhite.png"
+		image = assets.Images.WhitePawn
 	}
 
-	p.piece.Draw(screen, x, y, path)
+	p.piece.Draw(screen, x, y, image)
 }
 
 func (p *Pawn) Type() PieceType {
@@ -97,11 +96,11 @@ func (r *Rook) Move(Coordinates) {
 }
 
 func (r *Rook) Draw(screen *ebiten.Image, x int, y int) {
-	path := "images\\rook.png"
+	image := assets.Images.BlackRook
 	if r.piece.color == White {
-		path = "images\\rookWhite.png"
+		image = assets.Images.WhiteRook
 	}
-	r.piece.Draw(screen, x, y, path)
+	r.piece.Draw(screen, x, y, image)
 }
 
 func (r *Rook) Type() PieceType {
@@ -121,13 +120,13 @@ func (k *Knight) Move(Coordinates) {
 }
 
 func (k *Knight) Draw(screen *ebiten.Image, x int, y int) {
-	path := "images\\knight.png"
+	image := assets.Images.BlackKnight
 
 	if k.piece.color == White {
-		path = "images\\knightWhite.png"
+		image = assets.Images.WhiteKnight
 	}
 
-	k.piece.Draw(screen, x, y, path)
+	k.piece.Draw(screen, x, y, image)
 
 }
 
@@ -148,11 +147,11 @@ func (b *Bishop) Move(Coordinates) {
 }
 
 func (b *Bishop) Draw(screen *ebiten.Image, x int, y int) {
-	path := "images\\bishop.png"
+	image := assets.Images.BlackBishop
 	if b.piece.color == White {
-		path = "images\\bishopWhite.png"
+		image = assets.Images.WhiteBishop
 	}
-	b.piece.Draw(screen, x, y, path)
+	b.piece.Draw(screen, x, y, image)
 }
 
 func (b *Bishop) Type() PieceType {
@@ -172,11 +171,11 @@ func (q *Queen) Move(Coordinates) {
 }
 
 func (q *Queen) Draw(screen *ebiten.Image, x int, y int) {
-	path := "images\\queen.png"
+	image := assets.Images.BlackQueen
 	if q.piece.color == White {
-		path = "images\\queenWhite.png"
+		image = assets.Images.WhiteQueen
 	}
-	q.piece.Draw(screen, x, y, path)
+	q.piece.Draw(screen, x, y, image)
 }
 
 func (q *Queen) Type() PieceType {
@@ -196,11 +195,11 @@ func (k *King) Move(Coordinates) {
 }
 
 func (k *King) Draw(screen *ebiten.Image, x int, y int) {
-	path := "images\\king.png"
+	image := assets.Images.BlackKing
 	if k.piece.color == White {
-		path = "images\\kingWhite.png"
+		image = assets.Images.WhiteKing
 	}
-	k.piece.Draw(screen, x, y, path)
+	k.piece.Draw(screen, x, y, image)
 }
 
 func (k *King) Type() PieceType {
