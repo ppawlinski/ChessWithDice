@@ -14,6 +14,10 @@ const (
 	tileOffset    = 1
 )
 
+type Draggable interface {
+	SetDragOffset(x, y int)
+}
+
 type Coordinates struct {
 	col int
 	row int
@@ -45,13 +49,19 @@ type MovableDrawable interface {
 }
 
 type Board struct {
-	fields        [maxDimensions][maxDimensions]*Field
-	possibleMoves []Coordinates
-	kingPosition  [ColorLength]Coordinates
-	direction     Direction
+	fields       [maxDimensions][maxDimensions]*Field
+	kingPosition [ColorLength]Coordinates
+	direction    Direction
 }
 
-func (b *Board) Draw(screen *ebiten.Image) {
+func NewBoard() *Board {
+	return &Board{
+		kingPosition: [2]Coordinates{{1, 1}, {1, 1}},
+		direction:    Normal,
+	}
+}
+
+func (b *Board) Draw(screen *ebiten.Image, state GameState) {
 	var rect *ebiten.Image
 	for row := 0; row < maxDimensions; row++ {
 		for col := 0; col < maxDimensions; col++ {
@@ -60,9 +70,9 @@ func (b *Board) Draw(screen *ebiten.Image) {
 			} else {
 				rect = assets.Images.LightSquare
 			}
-			for i := 0; i < len(b.possibleMoves); i++ {
+			for i := 0; i < len(state.possibleMoves); i++ {
 				currentCoordinates := Coordinates{col, row}
-				if b.possibleMoves[i] == currentCoordinates {
+				if state.possibleMoves[i] == currentCoordinates {
 					rect = assets.Images.HighlightedSquare
 				}
 			}
@@ -87,6 +97,7 @@ func (b *Board) Draw(screen *ebiten.Image) {
 }
 
 func (b *Board) Reset() {
+	//!!!3PPA todo change direction (orientation)
 	b.fields[0][0] = &Field{piece: &Rook{NewPiece(Black)}}
 	b.fields[1][0] = &Field{piece: &Knight{NewPiece(Black)}}
 	b.fields[2][0] = &Field{piece: &Bishop{NewPiece(Black)}}
@@ -125,44 +136,47 @@ func (b *Board) Reset() {
 	b.kingPosition = [2]Coordinates{{3, 7}, {3, 0}}
 }
 
-func (b *Board) HitCheck() (Coordinates, []Coordinates) {
+func (b *Board) HitCheck(state *GameState) (Coordinates, []Coordinates) {
 	resultCol := -1
 	resultRow := -1
 	x, y := ebiten.CursorPosition()
 	col := x / (config.TileSize + tileOffset)
 	row := y / (config.TileSize + tileOffset)
 	if x > 0 && y > 0 && col >= 0 && col < maxDimensions && row >= 0 && row < maxDimensions {
-		if b.fields[col][row] != nil {
+		if b.fields[col][row] != nil && b.fields[col][row].piece.Piece().color == state.colorToMove {
 			resultCol = col
 			resultRow = row
 			piece := b.fields[col][row].piece.Piece()
 			piece.SetDragOffset(x, y)
 			fmt.Println("Selected piece: ", piece)
-			b.possibleMoves = b.fields[col][row].piece.GetPossibleMoves(b, Normal, Coordinates{resultCol, resultRow})
+			state.possibleMoves = b.fields[col][row].piece.GetPossibleMoves(b, Normal, Coordinates{resultCol, resultRow})
 		}
 	}
 
-	return Coordinates{resultCol, resultRow}, possibleMoves
+	return Coordinates{resultCol, resultRow}, state.possibleMoves
 }
 
-func (b *Board) DropCheck(draggedPiece Coordinates) {
+func (b *Board) DropCheck(state *GameState) {
+	draggedPiece := state.selectedPiece
 	x, y := ebiten.CursorPosition()
 	col := x / (config.TileSize + tileOffset)
 	row := y / (config.TileSize + tileOffset)
 
 	dropped := b.fields[draggedPiece.col][draggedPiece.row].piece.Piece()
 	dropped.SetDragOffset(0, 0)
-	b.possibleMoves = nil
+	state.possibleMoves = nil
 
 	moves := b.fields[draggedPiece.col][draggedPiece.row].piece.GetPossibleMoves(b, Normal, draggedPiece)
 	for _, move := range moves {
 		if move.col == col && move.row == row {
 			dropped.firstMove = false
+			state.colorToMove = (state.colorToMove + 1) % 2
 			b.fields[col][row] = b.fields[draggedPiece.col][draggedPiece.row]
 			if b.fields[col][row].piece.Type() == KingType {
 				b.kingPosition[b.fields[col][row].piece.Piece().color] = move
 			}
 			b.fields[draggedPiece.col][draggedPiece.row] = nil
+			break
 		}
 	}
 }

@@ -39,7 +39,9 @@ func (p *Pawn) GetPossibleMoves(b *Board, direction Direction, current Coordinat
 		}
 	}
 
-	return FilterIllegalMoves(current, moves, b, p.piece.color)
+	//!!!3PPA todo add en passant
+
+	return moves
 }
 
 func (r *Rook) GetPossibleMoves(b *Board, direction Direction, current Coordinates) []Coordinates {
@@ -87,7 +89,7 @@ func getRookMoves(current Coordinates, b *Board, currentColor Color, moves []Coo
 		}
 	}
 
-	return FilterIllegalMoves(current, moves, b, currentColor)
+	return moves
 }
 
 func (k *Knight) GetPossibleMoves(b *Board, direction Direction, current Coordinates) []Coordinates {
@@ -200,7 +202,7 @@ func getBishopMoves(current Coordinates, board *Board, currentColor Color, moves
 		}
 	}
 
-	return FilterIllegalMoves(current, moves, board, currentColor)
+	return moves
 }
 
 func (q *Queen) GetPossibleMoves(b *Board, direction Direction, current Coordinates) []Coordinates {
@@ -264,7 +266,7 @@ func (k *King) GetPossibleMoves(b *Board, direction Direction, current Coordinat
 		}
 	}
 
-	return FilterIllegalMoves(current, moves, b, currentColor)
+	return moves
 }
 
 func FilterIllegalMoves(position Coordinates, moves []Coordinates, board *Board, color Color) []Coordinates {
