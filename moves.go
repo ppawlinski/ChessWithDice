@@ -28,12 +28,12 @@ func (p *Pawn) GetPossibleMoves(b *Board, direction Direction, current Coordinat
 			}
 		}
 		if current.col-1 >= 0 && b.fields[current.col-1][current.row+moveDirection] != nil {
-			if b.fields[current.col-1][current.row+moveDirection].piece.Piece().color != p.piece.color {
+			if b.fields[current.col-1][current.row+moveDirection].Piece().color != p.piece.color {
 				moves = append(moves, Coordinates{current.col - 1, current.row + moveDirection})
 			}
 		}
 		if current.col+1 < maxDimensions && b.fields[current.col+1][current.row+moveDirection] != nil {
-			if b.fields[current.col+1][current.row+moveDirection].piece.Piece().color != p.piece.color {
+			if b.fields[current.col+1][current.row+moveDirection].Piece().color != p.piece.color {
 				moves = append(moves, Coordinates{current.col + 1, current.row + moveDirection})
 			}
 		}
@@ -46,7 +46,7 @@ func (p *Pawn) GetPossibleMoves(b *Board, direction Direction, current Coordinat
 
 func (r *Rook) GetPossibleMoves(b *Board, direction Direction, current Coordinates) []Coordinates {
 	var moves []Coordinates
-	currentColor := b.fields[current.col][current.row].piece.Piece().color
+	currentColor := b.fields[current.col][current.row].Piece().color
 	moves = getRookMoves(current, b, currentColor, moves)
 	return FilterIllegalMoves(current, moves, b, currentColor)
 }
@@ -54,7 +54,7 @@ func (r *Rook) GetPossibleMoves(b *Board, direction Direction, current Coordinat
 func getRookMoves(current Coordinates, b *Board, currentColor Color, moves []Coordinates) []Coordinates {
 	for i := 1; current.col+i < maxDimensions; i++ {
 		potentialField := b.fields[current.col+i][current.row]
-		if potentialField == nil || potentialField.piece.Piece().color != currentColor {
+		if potentialField == nil || potentialField.Piece().color != currentColor {
 			moves = append(moves, Coordinates{current.col + i, current.row})
 		}
 		if potentialField != nil {
@@ -63,7 +63,7 @@ func getRookMoves(current Coordinates, b *Board, currentColor Color, moves []Coo
 	}
 	for i := 1; current.col-i >= 0; i++ {
 		potentialField := b.fields[current.col-i][current.row]
-		if potentialField == nil || potentialField.piece.Piece().color != currentColor {
+		if potentialField == nil || potentialField.Piece().color != currentColor {
 			moves = append(moves, Coordinates{current.col - i, current.row})
 		}
 		if potentialField != nil {
@@ -72,7 +72,7 @@ func getRookMoves(current Coordinates, b *Board, currentColor Color, moves []Coo
 	}
 	for i := 1; current.row+i < maxDimensions; i++ {
 		potentialField := b.fields[current.col][current.row+i]
-		if potentialField == nil || potentialField.piece.Piece().color != currentColor {
+		if potentialField == nil || potentialField.Piece().color != currentColor {
 			moves = append(moves, Coordinates{current.col, current.row + i})
 		}
 		if potentialField != nil {
@@ -81,7 +81,7 @@ func getRookMoves(current Coordinates, b *Board, currentColor Color, moves []Coo
 	}
 	for i := 1; current.row-i >= 0; i++ {
 		potentialField := b.fields[current.col][current.row-i]
-		if potentialField == nil || potentialField.piece.Piece().color != currentColor {
+		if potentialField == nil || potentialField.Piece().color != currentColor {
 			moves = append(moves, Coordinates{current.col, current.row - i})
 		}
 		if potentialField != nil {
@@ -94,18 +94,18 @@ func getRookMoves(current Coordinates, b *Board, currentColor Color, moves []Coo
 
 func (k *Knight) GetPossibleMoves(b *Board, direction Direction, current Coordinates) []Coordinates {
 	var moves []Coordinates
-	currentColor := b.fields[current.col][current.row].piece.Piece().color
+	currentColor := b.fields[current.col][current.row].Piece().color
 
 	if current.col+2 < maxDimensions {
 		if current.row+1 < maxDimensions {
 			if b.fields[current.col+2][current.row+1] == nil ||
-				b.fields[current.col+2][current.row+1].piece.Piece().color != currentColor {
+				b.fields[current.col+2][current.row+1].Piece().color != currentColor {
 				moves = append(moves, Coordinates{current.col + 2, current.row + 1})
 			}
 		}
 		if current.row-1 >= 0 {
 			if b.fields[current.col+2][current.row-1] == nil ||
-				b.fields[current.col+2][current.row-1].piece.Piece().color != currentColor {
+				b.fields[current.col+2][current.row-1].Piece().color != currentColor {
 				moves = append(moves, Coordinates{current.col + 2, current.row - 1})
 			}
 		}
@@ -113,13 +113,13 @@ func (k *Knight) GetPossibleMoves(b *Board, direction Direction, current Coordin
 	if current.col-2 >= 0 {
 		if current.row+1 < maxDimensions {
 			if b.fields[current.col-2][current.row+1] == nil ||
-				b.fields[current.col-2][current.row+1].piece.Piece().color != currentColor {
+				b.fields[current.col-2][current.row+1].Piece().color != currentColor {
 				moves = append(moves, Coordinates{current.col - 2, current.row + 1})
 			}
 		}
 		if current.row-1 >= 0 {
 			if b.fields[current.col-2][current.row-1] == nil ||
-				b.fields[current.col-2][current.row-1].piece.Piece().color != currentColor {
+				b.fields[current.col-2][current.row-1].Piece().color != currentColor {
 				moves = append(moves, Coordinates{current.col - 2, current.row - 1})
 			}
 		}
@@ -127,13 +127,13 @@ func (k *Knight) GetPossibleMoves(b *Board, direction Direction, current Coordin
 	if current.col+1 < maxDimensions {
 		if current.row+2 < maxDimensions {
 			if b.fields[current.col+1][current.row+2] == nil ||
-				b.fields[current.col+1][current.row+2].piece.Piece().color != currentColor {
+				b.fields[current.col+1][current.row+2].Piece().color != currentColor {
 				moves = append(moves, Coordinates{current.col + 1, current.row + 2})
 			}
 		}
 		if current.row-2 >= 0 {
 			if b.fields[current.col+1][current.row-2] == nil ||
-				b.fields[current.col+1][current.row-2].piece.Piece().color != currentColor {
+				b.fields[current.col+1][current.row-2].Piece().color != currentColor {
 				moves = append(moves, Coordinates{current.col + 1, current.row - 2})
 			}
 		}
@@ -141,13 +141,13 @@ func (k *Knight) GetPossibleMoves(b *Board, direction Direction, current Coordin
 	if current.col-1 >= 0 {
 		if current.row+2 < maxDimensions {
 			if b.fields[current.col-1][current.row+2] == nil ||
-				b.fields[current.col-1][current.row+2].piece.Piece().color != currentColor {
+				b.fields[current.col-1][current.row+2].Piece().color != currentColor {
 				moves = append(moves, Coordinates{current.col - 1, current.row + 2})
 			}
 		}
 		if current.row-2 >= 0 {
 			if b.fields[current.col-1][current.row-2] == nil ||
-				b.fields[current.col-1][current.row-2].piece.Piece().color != currentColor {
+				b.fields[current.col-1][current.row-2].Piece().color != currentColor {
 				moves = append(moves, Coordinates{current.col - 1, current.row - 2})
 			}
 		}
@@ -158,7 +158,7 @@ func (k *Knight) GetPossibleMoves(b *Board, direction Direction, current Coordin
 
 func (b *Bishop) GetPossibleMoves(board *Board, direction Direction, current Coordinates) []Coordinates {
 	var moves []Coordinates
-	currentColor := board.fields[current.col][current.row].piece.Piece().color
+	currentColor := board.fields[current.col][current.row].Piece().color
 	moves = getBishopMoves(current, board, currentColor, moves)
 
 	return FilterIllegalMoves(current, moves, board, currentColor)
@@ -167,7 +167,7 @@ func (b *Bishop) GetPossibleMoves(board *Board, direction Direction, current Coo
 func getBishopMoves(current Coordinates, board *Board, currentColor Color, moves []Coordinates) []Coordinates {
 	for i := 1; current.col+i < maxDimensions && current.row+i < maxDimensions; i++ {
 		potentialField := board.fields[current.col+i][current.row+i]
-		if potentialField == nil || potentialField.piece.Piece().color != currentColor {
+		if potentialField == nil || potentialField.Piece().color != currentColor {
 			moves = append(moves, Coordinates{current.col + i, current.row + i})
 		}
 		if potentialField != nil {
@@ -176,7 +176,7 @@ func getBishopMoves(current Coordinates, board *Board, currentColor Color, moves
 	}
 	for i := 1; current.col-i >= 0 && current.row-i >= 0; i++ {
 		potentialField := board.fields[current.col-i][current.row-i]
-		if potentialField == nil || potentialField.piece.Piece().color != currentColor {
+		if potentialField == nil || potentialField.Piece().color != currentColor {
 			moves = append(moves, Coordinates{current.col - i, current.row - i})
 		}
 		if potentialField != nil {
@@ -185,7 +185,7 @@ func getBishopMoves(current Coordinates, board *Board, currentColor Color, moves
 	}
 	for i := 1; current.col+i < maxDimensions && current.row-i >= 0; i++ {
 		potentialField := board.fields[current.col+i][current.row-i]
-		if potentialField == nil || potentialField.piece.Piece().color != currentColor {
+		if potentialField == nil || potentialField.Piece().color != currentColor {
 			moves = append(moves, Coordinates{current.col + i, current.row - i})
 		}
 		if potentialField != nil {
@@ -194,7 +194,7 @@ func getBishopMoves(current Coordinates, board *Board, currentColor Color, moves
 	}
 	for i := 1; current.col-i >= 0 && current.row+i < maxDimensions; i++ {
 		potentialField := board.fields[current.col-i][current.row+i]
-		if potentialField == nil || potentialField.piece.Piece().color != currentColor {
+		if potentialField == nil || potentialField.Piece().color != currentColor {
 			moves = append(moves, Coordinates{current.col - i, current.row + i})
 		}
 		if potentialField != nil {
@@ -207,7 +207,7 @@ func getBishopMoves(current Coordinates, board *Board, currentColor Color, moves
 
 func (q *Queen) GetPossibleMoves(b *Board, direction Direction, current Coordinates) []Coordinates {
 	var moves []Coordinates
-	currentColor := b.fields[current.col][current.row].piece.Piece().color
+	currentColor := b.fields[current.col][current.row].Piece().color
 	moves = getBishopMoves(current, b, currentColor, moves)
 	moves = getRookMoves(current, b, currentColor, moves)
 
@@ -216,52 +216,52 @@ func (q *Queen) GetPossibleMoves(b *Board, direction Direction, current Coordina
 
 func (k *King) GetPossibleMoves(b *Board, direction Direction, current Coordinates) []Coordinates {
 	var moves []Coordinates
-	currentColor := b.fields[current.col][current.row].piece.Piece().color
+	currentColor := b.fields[current.col][current.row].Piece().color
 	if current.col+1 < maxDimensions {
 		potentialField := b.fields[current.col+1][current.row]
-		if potentialField == nil || potentialField.piece.Piece().color != currentColor {
+		if potentialField == nil || potentialField.Piece().color != currentColor {
 			moves = append(moves, Coordinates{current.col + 1, current.row})
 		}
 		if current.row+1 < maxDimensions {
 			potentialField := b.fields[current.col+1][current.row+1]
-			if potentialField == nil || potentialField.piece.Piece().color != currentColor {
+			if potentialField == nil || potentialField.Piece().color != currentColor {
 				moves = append(moves, Coordinates{current.col + 1, current.row + 1})
 			}
 		}
 		if current.row-1 >= 0 {
 			potentialField := b.fields[current.col+1][current.row-1]
-			if potentialField == nil || potentialField.piece.Piece().color != currentColor {
+			if potentialField == nil || potentialField.Piece().color != currentColor {
 				moves = append(moves, Coordinates{current.col + 1, current.row - 1})
 			}
 		}
 	}
 	if current.col-1 >= 0 {
 		potentialField := b.fields[current.col-1][current.row]
-		if potentialField == nil || potentialField.piece.Piece().color != currentColor {
+		if potentialField == nil || potentialField.Piece().color != currentColor {
 			moves = append(moves, Coordinates{current.col - 1, current.row})
 		}
 		if current.row+1 < maxDimensions {
 			potentialField := b.fields[current.col-1][current.row+1]
-			if potentialField == nil || potentialField.piece.Piece().color != currentColor {
+			if potentialField == nil || potentialField.Piece().color != currentColor {
 				moves = append(moves, Coordinates{current.col - 1, current.row + 1})
 			}
 		}
 		if current.row-1 >= 0 {
 			potentialField := b.fields[current.col-1][current.row-1]
-			if potentialField == nil || potentialField.piece.Piece().color != currentColor {
+			if potentialField == nil || potentialField.Piece().color != currentColor {
 				moves = append(moves, Coordinates{current.col - 1, current.row - 1})
 			}
 		}
 	}
 	if current.row+1 < maxDimensions {
 		potentialField := b.fields[current.col][current.row+1]
-		if potentialField == nil || potentialField.piece.Piece().color != currentColor {
+		if potentialField == nil || potentialField.Piece().color != currentColor {
 			moves = append(moves, Coordinates{current.col, current.row + 1})
 		}
 	}
 	if current.row-1 >= 0 {
 		potentialField := b.fields[current.col][current.row-1]
-		if potentialField == nil || potentialField.piece.Piece().color != currentColor {
+		if potentialField == nil || potentialField.Piece().color != currentColor {
 			moves = append(moves, Coordinates{current.col, current.row - 1})
 		}
 	}
@@ -284,7 +284,7 @@ func KingInCheck(position Coordinates, move Coordinates, board *Board, color Col
 	kingInCheck := false
 	blockedField := Coordinates{-1, -1}
 
-	if board.fields[position.col][position.row].piece.Type() == KingType {
+	if board.fields[position.col][position.row].Type() == KingType {
 		kingPosition = move
 	} else {
 		blockedField = move
@@ -303,49 +303,49 @@ func AttackedByKing(kingPosition, freeField, blockedField Coordinates, b *Board,
 	attacked := false
 	if kingPosition.col+1 < maxDimensions {
 		potentialField := b.fields[kingPosition.col+1][kingPosition.row]
-		if potentialField != nil && potentialField.piece.Piece().color != color && potentialField.piece.Type() == KingType {
+		if potentialField != nil && potentialField.Piece().color != color && potentialField.Type() == KingType {
 			attacked = true
 		}
 		if kingPosition.row+1 < maxDimensions {
 			potentialField := b.fields[kingPosition.col+1][kingPosition.row+1]
-			if potentialField != nil && potentialField.piece.Piece().color != color && potentialField.piece.Type() == KingType {
+			if potentialField != nil && potentialField.Piece().color != color && potentialField.Type() == KingType {
 				attacked = true
 			}
 		}
 		if kingPosition.row-1 >= 0 {
 			potentialField := b.fields[kingPosition.col+1][kingPosition.row-1]
-			if potentialField != nil && potentialField.piece.Piece().color != color && potentialField.piece.Type() == KingType {
+			if potentialField != nil && potentialField.Piece().color != color && potentialField.Type() == KingType {
 				attacked = true
 			}
 		}
 	}
 	if kingPosition.col-1 >= 0 {
 		potentialField := b.fields[kingPosition.col-1][kingPosition.row]
-		if potentialField != nil && potentialField.piece.Piece().color != color && potentialField.piece.Type() == KingType {
+		if potentialField != nil && potentialField.Piece().color != color && potentialField.Type() == KingType {
 			attacked = true
 		}
 		if kingPosition.row+1 < maxDimensions {
 			potentialField := b.fields[kingPosition.col-1][kingPosition.row+1]
-			if potentialField != nil && potentialField.piece.Piece().color != color && potentialField.piece.Type() == KingType {
+			if potentialField != nil && potentialField.Piece().color != color && potentialField.Type() == KingType {
 				attacked = true
 			}
 		}
 		if kingPosition.row-1 >= 0 {
 			potentialField := b.fields[kingPosition.col-1][kingPosition.row-1]
-			if potentialField != nil && potentialField.piece.Piece().color != color && potentialField.piece.Type() == KingType {
+			if potentialField != nil && potentialField.Piece().color != color && potentialField.Type() == KingType {
 				attacked = true
 			}
 		}
 	}
 	if kingPosition.row+1 < maxDimensions {
 		potentialField := b.fields[kingPosition.col][kingPosition.row+1]
-		if potentialField != nil && potentialField.piece.Piece().color != color && potentialField.piece.Type() == KingType {
+		if potentialField != nil && potentialField.Piece().color != color && potentialField.Type() == KingType {
 			attacked = true
 		}
 	}
 	if kingPosition.row-1 >= 0 {
 		potentialField := b.fields[kingPosition.col][kingPosition.row-1]
-		if potentialField != nil && potentialField.piece.Piece().color != color && potentialField.piece.Type() == KingType {
+		if potentialField != nil && potentialField.Piece().color != color && potentialField.Type() == KingType {
 			attacked = true
 		}
 	}
@@ -358,15 +358,15 @@ func AttackedByKnight(kingPosition, freeField, blockedField Coordinates, board *
 	if kingPosition.col+2 < maxDimensions {
 		if kingPosition.row+1 < maxDimensions {
 			if board.fields[kingPosition.col+2][kingPosition.row+1] != nil &&
-				board.fields[kingPosition.col+2][kingPosition.row+1].piece.Piece().color != color &&
-				board.fields[kingPosition.col+2][kingPosition.row+1].piece.Type() == KnightType {
+				board.fields[kingPosition.col+2][kingPosition.row+1].Piece().color != color &&
+				board.fields[kingPosition.col+2][kingPosition.row+1].Type() == KnightType {
 				attacked = true
 			}
 		}
 		if kingPosition.row-1 >= 0 {
 			if board.fields[kingPosition.col+2][kingPosition.row-1] != nil &&
-				board.fields[kingPosition.col+2][kingPosition.row-1].piece.Piece().color != color &&
-				board.fields[kingPosition.col+2][kingPosition.row-1].piece.Type() == KnightType {
+				board.fields[kingPosition.col+2][kingPosition.row-1].Piece().color != color &&
+				board.fields[kingPosition.col+2][kingPosition.row-1].Type() == KnightType {
 				attacked = true
 
 			}
@@ -375,15 +375,15 @@ func AttackedByKnight(kingPosition, freeField, blockedField Coordinates, board *
 	if kingPosition.col-2 >= 0 {
 		if kingPosition.row+1 < maxDimensions {
 			if board.fields[kingPosition.col-2][kingPosition.row+1] != nil &&
-				board.fields[kingPosition.col-2][kingPosition.row+1].piece.Piece().color != color &&
-				board.fields[kingPosition.col-2][kingPosition.row+1].piece.Type() == KnightType {
+				board.fields[kingPosition.col-2][kingPosition.row+1].Piece().color != color &&
+				board.fields[kingPosition.col-2][kingPosition.row+1].Type() == KnightType {
 				attacked = true
 			}
 		}
 		if kingPosition.row-1 >= 0 {
 			if board.fields[kingPosition.col-2][kingPosition.row-1] != nil &&
-				board.fields[kingPosition.col-2][kingPosition.row-1].piece.Piece().color != color &&
-				board.fields[kingPosition.col-2][kingPosition.row-1].piece.Type() == KnightType {
+				board.fields[kingPosition.col-2][kingPosition.row-1].Piece().color != color &&
+				board.fields[kingPosition.col-2][kingPosition.row-1].Type() == KnightType {
 				attacked = true
 			}
 		}
@@ -391,15 +391,15 @@ func AttackedByKnight(kingPosition, freeField, blockedField Coordinates, board *
 	if kingPosition.col+1 < maxDimensions {
 		if kingPosition.row+2 < maxDimensions {
 			if board.fields[kingPosition.col+1][kingPosition.row+2] != nil &&
-				board.fields[kingPosition.col+1][kingPosition.row+2].piece.Piece().color != color &&
-				board.fields[kingPosition.col+1][kingPosition.row+2].piece.Type() == KnightType {
+				board.fields[kingPosition.col+1][kingPosition.row+2].Piece().color != color &&
+				board.fields[kingPosition.col+1][kingPosition.row+2].Type() == KnightType {
 				attacked = true
 			}
 		}
 		if kingPosition.row-2 >= 0 {
 			if board.fields[kingPosition.col+1][kingPosition.row-2] != nil &&
-				board.fields[kingPosition.col+1][kingPosition.row-2].piece.Piece().color != color &&
-				board.fields[kingPosition.col+1][kingPosition.row-2].piece.Type() == KnightType {
+				board.fields[kingPosition.col+1][kingPosition.row-2].Piece().color != color &&
+				board.fields[kingPosition.col+1][kingPosition.row-2].Type() == KnightType {
 				attacked = true
 			}
 		}
@@ -407,15 +407,15 @@ func AttackedByKnight(kingPosition, freeField, blockedField Coordinates, board *
 	if kingPosition.col-1 >= 0 {
 		if kingPosition.row+2 < maxDimensions {
 			if board.fields[kingPosition.col-1][kingPosition.row+2] != nil &&
-				board.fields[kingPosition.col-1][kingPosition.row+2].piece.Piece().color != color &&
-				board.fields[kingPosition.col-1][kingPosition.row+2].piece.Type() == KnightType {
+				board.fields[kingPosition.col-1][kingPosition.row+2].Piece().color != color &&
+				board.fields[kingPosition.col-1][kingPosition.row+2].Type() == KnightType {
 				attacked = true
 			}
 		}
 		if kingPosition.row-2 >= 0 {
 			if board.fields[kingPosition.col-1][kingPosition.row-2] != nil &&
-				board.fields[kingPosition.col-1][kingPosition.row-2].piece.Piece().color != color &&
-				board.fields[kingPosition.col-1][kingPosition.row-2].piece.Type() == KnightType {
+				board.fields[kingPosition.col-1][kingPosition.row-2].Piece().color != color &&
+				board.fields[kingPosition.col-1][kingPosition.row-2].Type() == KnightType {
 				attacked = true
 			}
 		}
@@ -438,7 +438,7 @@ func AttackedByPawn(kingPosition, freeField, blockedField Coordinates, board *Bo
 		if kingPosition.col-1 >= 0 {
 			field := board.fields[kingPosition.col-1][kingPosition.row+searchDirection]
 			if field != nil {
-				if field.piece.Type() == PawnType && field.piece.Piece().color != color {
+				if field.Type() == PawnType && field.Piece().color != color {
 					attacked = true
 				}
 			}
@@ -447,7 +447,7 @@ func AttackedByPawn(kingPosition, freeField, blockedField Coordinates, board *Bo
 		if kingPosition.col+1 < maxDimensions {
 			field := board.fields[kingPosition.col+1][kingPosition.row+searchDirection]
 			if field != nil {
-				if field.piece.Type() == PawnType && field.piece.Piece().color != color {
+				if field.Type() == PawnType && field.Piece().color != color {
 					attacked = true
 				}
 			}
@@ -467,7 +467,7 @@ func AttackedByBishopQueen(kingPosition, freeField, blockedField Coordinates, bo
 		}
 		field := board.fields[kingPosition.col+i][kingPosition.row+i]
 		if field != nil {
-			if field.piece.Piece().color != color && (field.piece.Type() == BishopType || field.piece.Type() == QueenType) {
+			if field.Piece().color != color && (field.Type() == BishopType || field.Type() == QueenType) {
 				attacked = true
 			}
 			break
@@ -482,7 +482,7 @@ func AttackedByBishopQueen(kingPosition, freeField, blockedField Coordinates, bo
 		}
 		field := board.fields[kingPosition.col-i][kingPosition.row-i]
 		if field != nil {
-			if field.piece.Piece().color != color && (field.piece.Type() == BishopType || field.piece.Type() == QueenType) {
+			if field.Piece().color != color && (field.Type() == BishopType || field.Type() == QueenType) {
 				attacked = true
 			}
 			break
@@ -497,7 +497,7 @@ func AttackedByBishopQueen(kingPosition, freeField, blockedField Coordinates, bo
 		}
 		field := board.fields[kingPosition.col+i][kingPosition.row-i]
 		if field != nil {
-			if field.piece.Piece().color != color && (field.piece.Type() == BishopType || field.piece.Type() == QueenType) {
+			if field.Piece().color != color && (field.Type() == BishopType || field.Type() == QueenType) {
 				attacked = true
 			}
 			break
@@ -512,7 +512,7 @@ func AttackedByBishopQueen(kingPosition, freeField, blockedField Coordinates, bo
 		}
 		field := board.fields[kingPosition.col-i][kingPosition.row+i]
 		if field != nil {
-			if field.piece.Piece().color != color && (field.piece.Type() == BishopType || field.piece.Type() == QueenType) {
+			if field.Piece().color != color && (field.Type() == BishopType || field.Type() == QueenType) {
 				attacked = true
 			}
 			break
@@ -534,7 +534,7 @@ func AttackedByRookQueen(kingPosition, freeField, blockedField Coordinates, boar
 			}
 			field := board.fields[kingPosition.col][row]
 			if field != nil {
-				if field.piece.Piece().color != color && (field.piece.Type() == RookType || field.piece.Type() == QueenType) {
+				if field.Piece().color != color && (field.Type() == RookType || field.Type() == QueenType) {
 					attacked = true
 				}
 				break
@@ -552,7 +552,7 @@ func AttackedByRookQueen(kingPosition, freeField, blockedField Coordinates, boar
 			}
 			field := board.fields[col][kingPosition.row]
 			if field != nil {
-				if field.piece.Piece().color != color && (field.piece.Type() == RookType || field.piece.Type() == QueenType) {
+				if field.Piece().color != color && (field.Type() == RookType || field.Type() == QueenType) {
 					attacked = true
 				}
 				break

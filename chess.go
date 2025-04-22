@@ -1,10 +1,14 @@
 package main
 
-import "github.com/hajimehoshi/ebiten"
+import (
+	"github.com/hajimehoshi/ebiten"
+	input "github.com/ppawlinski/ChessWithDice/input"
+)
 
 type Chess struct {
 	board Board
 	state GameState
+	input input.Input
 }
 
 func NewChess() *Chess {
@@ -15,19 +19,31 @@ func NewChess() *Chess {
 }
 
 func (c *Chess) Update(screen *ebiten.Image) error {
-	//!!!3PPA todo add some logic to determine if it's initial mouseclick - prevent catching a piece mid-drag
-	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
-		if c.state.dragging {
-			c.board.GetPiece(c.state.selectedPiece).SetDragOffset(ebiten.CursorPosition())
-		} else {
-			c.state.selectedPiece, c.state.possibleMoves = c.board.HitCheck(&c.state)
+	lmbEvent := c.input.GetButtonEvent(input.LMB)
+	if lmbEvent == input.Click {
+		if c.state.selectedPiece.Undefined() {
+			c.board.SelectPiece(&c.state)
 			if !c.state.selectedPiece.Undefined() {
 				c.state.dragging = true
+				c.state.possibleMoves = c.board.GetPossibleMoves(c.state.selectedPiece)
+			}
+		} else {
+			selectedMove := c.board.HitCheck(&c.state)
+			if c.board.GetColor(selectedMove) == c.state.colorToMove {
+				c.board.SelectPiece(&c.state)
+				c.state.dragging = true
+				c.state.possibleMoves = c.board.GetPossibleMoves(c.state.selectedPiece)
+			} else {
+				c.board.MoveSelected(&c.state, selectedMove)
 			}
 		}
-	} else if c.state.dragging {
-		c.board.DropCheck(&c.state)
-		c.state.selectedPiece.Reset()
+	} else if lmbEvent == input.Hold && c.state.dragging {
+		c.board.GetPiece(c.state.selectedPiece).Piece().SetDragOffset(ebiten.CursorPosition())
+	} else if lmbEvent == input.Release {
+		if c.state.dragging {
+			selectedMove := c.board.HitCheck(&c.state)
+			c.board.MoveSelected(&c.state, selectedMove)
+		}
 		c.state.dragging = false
 	}
 	return nil
