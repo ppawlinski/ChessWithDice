@@ -6,7 +6,7 @@ import (
 	"github.com/ppawlinski/ChessWithDice/assets"
 	"github.com/ppawlinski/ChessWithDice/config"
 
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 const (
@@ -65,16 +65,16 @@ func NewBoard() *Board {
 	}
 }
 
-func (b *Board) Draw(screen *ebiten.Image, state GameState) {
+func (b *Board) Draw(screen *ebiten.Image, state *GameState) {
 	var rect *ebiten.Image
-	for row := 0; row < maxDimensions; row++ {
-		for col := 0; col < maxDimensions; col++ {
+	for row := range maxDimensions {
+		for col := range maxDimensions {
 			if (row%2 == 1 && col%2 == 1) || (row%2 == 0 && col%2 == 0) {
 				rect = assets.Images.DarkSquare
 			} else {
 				rect = assets.Images.LightSquare
 			}
-			for i := 0; i < len(state.possibleMoves); i++ {
+			for i := range state.possibleMoves {
 				currentCoordinates := Coordinates{col, row}
 				if state.possibleMoves[i] == currentCoordinates {
 					rect = assets.Images.HighlightedSquare
@@ -88,8 +88,8 @@ func (b *Board) Draw(screen *ebiten.Image, state GameState) {
 		}
 	}
 
-	for row := 0; row < maxDimensions; row++ {
-		for col := 0; col < maxDimensions; col++ {
+	for row := range maxDimensions {
+		for col := range maxDimensions {
 			x := col * (config.TileSize + tileOffset)
 			y := row * (config.TileSize + tileOffset)
 			piece := b.fields[col][row]
@@ -147,16 +147,6 @@ func (b *Board) HitCheck(state *GameState) Coordinates {
 	col := x / (config.TileSize + tileOffset)
 	row := y / (config.TileSize + tileOffset)
 	if x > 0 && y > 0 && col >= 0 && col < maxDimensions && row >= 0 && row < maxDimensions {
-		/* if state.selectedPiece.Undefined(){
-			if b.fields[col][row] != nil && b.fields[col][row].Piece().color == state.colorToMove {
-				resultCol = col
-				resultRow = row
-				piece := b.fields[col][row].Piece()
-				piece.SetDragOffset(x, y)
-				fmt.Println("Selected piece: ", piece)
-				state.possibleMoves = b.fields[col][row].GetPossibleMoves(b, Normal, Coordinates{resultCol, resultRow})
-			}
-		} */
 		resultCol = col
 		resultRow = row
 	}
@@ -176,10 +166,7 @@ func (b *Board) SelectPiece(s *GameState) {
 }
 
 func (b *Board) GetPossibleMoves(c Coordinates) []Coordinates {
-	//piece := b.fields[c.col][c.row].Piece()
-
 	return b.fields[c.col][c.row].GetPossibleMoves(b, Normal, Coordinates{c.col, c.row})
-
 }
 
 func (b *Board) MoveSelected(state *GameState, selectedMove Coordinates) {
@@ -204,7 +191,11 @@ func (b *Board) MoveSelected(state *GameState, selectedMove Coordinates) {
 }
 
 func (b *Board) GetPiece(position Coordinates) MovableDrawable {
-	return b.fields[position.col][position.row]
+	if position.Valid() {
+		return b.fields[position.col][position.row]
+	} else {
+		return nil
+	}
 }
 
 func (b *Board) GetColor(position Coordinates) Color {

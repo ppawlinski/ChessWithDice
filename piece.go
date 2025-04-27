@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/ppawlinski/ChessWithDice/assets"
 	"github.com/ppawlinski/ChessWithDice/config"
 )

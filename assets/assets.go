@@ -3,8 +3,8 @@ package assets
 import (
 	"image/color"
 
-	"github.com/hajimehoshi/ebiten"
-	"github.com/hajimehoshi/ebiten/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/ppawlinski/ChessWithDice/config"
 )
 
@@ -29,37 +29,37 @@ type Assets struct {
 var Images Assets
 
 func Init() {
-	image, _ := ebiten.NewImage(config.TileSize, config.TileSize, ebiten.FilterDefault)
+	image := ebiten.NewImage(config.TileSize, config.TileSize)
 	image.Fill(color.RGBA{117, 59, 12, 255})
 	Images.DarkSquare = image
-	image, _ = ebiten.NewImage(config.TileSize, config.TileSize, ebiten.FilterDefault)
+	image = ebiten.NewImage(config.TileSize, config.TileSize)
 	image.Fill(color.RGBA{196, 151, 114, 255})
 	Images.LightSquare = image
-	image, _ = ebiten.NewImage(config.TileSize, config.TileSize, ebiten.FilterDefault)
+	image = ebiten.NewImage(config.TileSize, config.TileSize)
 	image.Fill(color.RGBA{255, 127, 80, 255})
 	Images.HighlightedSquare = image
-	image, _, _ = ebitenutil.NewImageFromFile("images\\pawn.png", ebiten.FilterDefault)
+	image, _, _ = ebitenutil.NewImageFromFile("images\\pawn.png")
 	Images.BlackPawn = image
-	image, _, _ = ebitenutil.NewImageFromFile("images\\pawnWhite.png", ebiten.FilterDefault)
+	image, _, _ = ebitenutil.NewImageFromFile("images\\pawnWhite.png")
 	Images.WhitePawn = image
-	image, _, _ = ebitenutil.NewImageFromFile("images\\king.png", ebiten.FilterDefault)
+	image, _, _ = ebitenutil.NewImageFromFile("images\\king.png")
 	Images.BlackKing = image
-	image, _, _ = ebitenutil.NewImageFromFile("images\\kingWhite.png", ebiten.FilterDefault)
+	image, _, _ = ebitenutil.NewImageFromFile("images\\kingWhite.png")
 	Images.WhiteKing = image
-	image, _, _ = ebitenutil.NewImageFromFile("images\\queen.png", ebiten.FilterDefault)
+	image, _, _ = ebitenutil.NewImageFromFile("images\\queen.png")
 	Images.BlackQueen = image
-	image, _, _ = ebitenutil.NewImageFromFile("images\\queenWhite.png", ebiten.FilterDefault)
+	image, _, _ = ebitenutil.NewImageFromFile("images\\queenWhite.png")
 	Images.WhiteQueen = image
-	image, _, _ = ebitenutil.NewImageFromFile("images\\bishop.png", ebiten.FilterDefault)
+	image, _, _ = ebitenutil.NewImageFromFile("images\\bishop.png")
 	Images.BlackBishop = image
-	image, _, _ = ebitenutil.NewImageFromFile("images\\bishopWhite.png", ebiten.FilterDefault)
+	image, _, _ = ebitenutil.NewImageFromFile("images\\bishopWhite.png")
 	Images.WhiteBishop = image
-	image, _, _ = ebitenutil.NewImageFromFile("images\\knight.png", ebiten.FilterDefault)
+	image, _, _ = ebitenutil.NewImageFromFile("images\\knight.png")
 	Images.BlackKnight = image
-	image, _, _ = ebitenutil.NewImageFromFile("images\\knightWhite.png", ebiten.FilterDefault)
+	image, _, _ = ebitenutil.NewImageFromFile("images\\knightWhite.png")
 	Images.WhiteKnight = image
-	image, _, _ = ebitenutil.NewImageFromFile("images\\rook.png", ebiten.FilterDefault)
+	image, _, _ = ebitenutil.NewImageFromFile("images\\rook.png")
 	Images.BlackRook = image
-	image, _, _ = ebitenutil.NewImageFromFile("images\\rookWhite.png", ebiten.FilterDefault)
+	image, _, _ = ebitenutil.NewImageFromFile("images\\rookWhite.png")
 	Images.WhiteRook = image
 }

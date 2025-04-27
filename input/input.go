@@ -1,7 +1,7 @@
-package input
+package chessInput
 
 import (
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type InputEvent int8
@@ -25,6 +25,11 @@ const (
 type Input struct {
 	lmbPressed bool
 	rmbPressed bool
+}
+
+func NewInput() *Input {
+	input := &Input{lmbPressed: false, rmbPressed: false}
+	return input
 }
 
 func (i *Input) GetButtonEvent(b Button) InputEvent {

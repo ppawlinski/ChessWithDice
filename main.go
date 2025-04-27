@@ -3,15 +3,17 @@ package main
 import (
 	"log"
 
-	"github.com/hajimehoshi/ebiten"
+	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/ppawlinski/ChessWithDice/assets"
 )
 
 func main() {
 	assets.Init()
-	ebiten.SetWindowSize(606, 606)
+	ebiten.SetWindowSize(806, 606)
 	ebiten.SetWindowTitle("Chess 2.0")
-	if err := ebiten.RunGame(NewChess()); err != nil {
+	c := NewChess()
+	c.ui = c.CreateUI()
+	if err := ebiten.RunGame(c); err != nil {
 		log.Fatal(err)
 	}
 }
