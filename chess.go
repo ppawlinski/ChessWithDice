@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"image/color"
 	"log"
+	"math/rand/v2"
+	"strconv"
 
 	"github.com/ebitenui/ebitenui"
 	"github.com/ebitenui/ebitenui/image"
@@ -16,10 +18,11 @@ import (
 )
 
 type Chess struct {
-	board *Board
-	state *GameState
-	input *chessInput.Input
-	ui    *ebitenui.UI
+	board         *Board
+	state         *GameState
+	input         *chessInput.Input
+	ui            *ebitenui.UI
+	budgetCounter *widget.Text
 }
 
 func NewChess() *Chess {
@@ -37,6 +40,7 @@ func (c *Chess) CreateUI() *ebitenui.UI {
 	endTurnButtonImage, _ := loadButtonImage()
 	var rollButton *widget.Button
 	var endTurnButton *widget.Button
+	var budgetCounter *widget.Text
 	rootContainer := widget.NewContainer(
 		widget.ContainerOpts.Layout(
 			widget.NewAnchorLayout(
@@ -54,6 +58,7 @@ func (c *Chess) CreateUI() *ebitenui.UI {
 					VerticalPosition:   widget.AnchorLayoutPositionEnd,
 				},
 			),
+			func(w *widget.Widget) { w.Visibility = widget.Visibility_Hide },
 		),
 		widget.ButtonOpts.Image(endTurnButtonImage),
 		widget.ButtonOpts.Text(
@@ -69,10 +74,17 @@ func (c *Chess) CreateUI() *ebitenui.UI {
 			Top:    5,
 			Bottom: 5,
 		}),
-		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
-			rollButton.GetWidget().Visibility = widget.Visibility_Show
-			endTurnButton.GetWidget().Visibility = widget.Visibility_Hide
-		}),
+		widget.ButtonOpts.ClickedHandler(
+			func(args *widget.ButtonClickedEventArgs) {
+				rollButton.GetWidget().Visibility = widget.Visibility_Show
+				endTurnButton.GetWidget().Visibility = widget.Visibility_Hide
+				c.state.leftoverBudget[c.state.colorToMove] = c.state.currentBudget > 0
+				c.state.colorToMove = (c.state.colorToMove + 1) % 2
+				c.state.currentBudget = 0
+				c.state.turnStarted = false
+				budgetCounter.Label = strconv.Itoa(c.state.currentBudget)
+			},
+		),
 	)
 
 	rollButton = widget.NewButton(
@@ -101,12 +113,58 @@ func (c *Chess) CreateUI() *ebitenui.UI {
 		widget.ButtonOpts.ClickedHandler(func(args *widget.ButtonClickedEventArgs) {
 			rollButton.GetWidget().Visibility = widget.Visibility_Hide
 			endTurnButton.GetWidget().Visibility = widget.Visibility_Show
+			c.state.turnStarted = true
+			c.state.currentBudget = rand.IntN(6) + 1
+			if c.state.leftoverBudget[c.state.colorToMove] {
+				c.state.currentBudget++
+			}
+			budgetCounter.Label = strconv.Itoa(c.state.currentBudget)
 		}),
-		//!!!3PPA visibility widget.WidgetOpts.
 	)
 
+	budgetContainer := widget.NewContainer(
+		widget.ContainerOpts.BackgroundImage(image.NewNineSliceColor(color.NRGBA{0, 200, 255, 255})),
+		widget.ContainerOpts.Layout(widget.NewAnchorLayout()),
+		widget.ContainerOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(
+				widget.AnchorLayoutData{
+					HorizontalPosition: widget.AnchorLayoutPositionEnd,
+					VerticalPosition:   widget.AnchorLayoutPositionStart,
+				},
+			),
+			widget.WidgetOpts.MinSize(100, 100),
+		),
+	)
+	budgetLabel := widget.NewText(
+		widget.TextOpts.Text("Current budget:", face, color.White),
+		widget.TextOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(
+				widget.AnchorLayoutData{
+					HorizontalPosition: widget.AnchorLayoutPositionCenter,
+					VerticalPosition:   widget.AnchorLayoutPositionStart,
+				},
+			),
+		),
+	)
+	budgetCounter = widget.NewText(
+		widget.TextOpts.Text("0", face, color.White),
+		widget.TextOpts.WidgetOpts(
+			widget.WidgetOpts.LayoutData(
+				widget.AnchorLayoutData{
+					HorizontalPosition: widget.AnchorLayoutPositionCenter,
+					VerticalPosition:   widget.AnchorLayoutPositionEnd,
+				},
+			),
+		),
+	)
+	c.budgetCounter = budgetCounter
+	budgetContainer.AddChild(budgetLabel)
+	budgetContainer.AddChild(budgetCounter)
+
+	rootContainer.AddChild(budgetContainer)
 	rootContainer.AddChild(endTurnButton)
 	rootContainer.AddChild(rollButton)
+
 	return &ebitenui.UI{
 		Container: rootContainer,
 	}
@@ -114,6 +172,10 @@ func (c *Chess) CreateUI() *ebitenui.UI {
 
 func (c *Chess) Update() error {
 	c.ui.Update()
+	if !c.state.turnStarted {
+		return nil
+	}
+
 	lmbEvent := c.input.GetButtonEvent(chessInput.LMB)
 	if lmbEvent == chessInput.Click {
 		if c.state.selectedPiece.Undefined() {
@@ -124,12 +186,19 @@ func (c *Chess) Update() error {
 			}
 		} else {
 			selectedMove := c.board.HitCheck(c.state)
-			if c.board.GetColor(selectedMove) == c.state.colorToMove {
-				c.board.SelectPiece(c.state)
-				c.state.dragging = true
-				c.state.possibleMoves = c.board.GetPossibleMoves(c.state.selectedPiece)
+			if selectedMove.Valid() {
+				if c.board.GetPiece(selectedMove) != nil && c.board.GetColor(selectedMove) == c.state.colorToMove {
+					c.board.SelectPiece(c.state)
+					c.state.dragging = true
+					c.state.possibleMoves = c.board.GetPossibleMoves(c.state.selectedPiece)
+				} else {
+					c.board.MoveSelected(c.state, selectedMove)
+					c.state.selectedPiece.Reset()
+					c.state.possibleMoves = nil
+				}
 			} else {
-				c.board.MoveSelected(c.state, selectedMove)
+				c.state.selectedPiece.Reset()
+				c.state.possibleMoves = nil
 			}
 		}
 	} else if lmbEvent == chessInput.Hold && c.state.dragging {
@@ -141,6 +210,7 @@ func (c *Chess) Update() error {
 		}
 		c.state.dragging = false
 	}
+	c.budgetCounter.Label = strconv.Itoa(c.state.currentBudget)
 	return nil
 }
 

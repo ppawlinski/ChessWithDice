@@ -41,6 +41,7 @@ type Movable interface {
 	GetPossibleMoves(*Board, Direction, Coordinates) []Coordinates
 	Type() PieceType
 	Piece() *Piece
+	Cost(*GameState) int
 }
 
 type Drawable interface {
@@ -170,20 +171,25 @@ func (b *Board) GetPossibleMoves(c Coordinates) []Coordinates {
 }
 
 func (b *Board) MoveSelected(state *GameState, selectedMove Coordinates) {
-	dropped := b.fields[state.selectedPiece.col][state.selectedPiece.row].Piece()
-	dropped.SetDragOffset(0, 0)
+	dropped := b.fields[state.selectedPiece.col][state.selectedPiece.row]
+	dropped.Piece().SetDragOffset(0, 0)
+
+	if dropped.Cost(state) > state.currentBudget {
+		state.possibleMoves = nil
+		state.selectedPiece.Reset()
+	}
 
 	moves := state.possibleMoves
 	for _, move := range moves {
 		if move.col == selectedMove.col && move.row == selectedMove.row {
 			state.possibleMoves = nil
-			dropped.firstMove = false
-			state.colorToMove = (state.colorToMove + 1) % 2
+			dropped.Piece().firstMove = false
 			b.fields[move.col][move.row] = b.fields[state.selectedPiece.col][state.selectedPiece.row]
 			if b.fields[move.col][move.row].Type() == KingType {
 				b.kingPosition[b.fields[move.col][move.row].Piece().color] = move
 			}
 			b.fields[state.selectedPiece.col][state.selectedPiece.row] = nil
+			state.currentBudget -= dropped.Cost(state)
 			state.selectedPiece.Reset()
 			break
 		}

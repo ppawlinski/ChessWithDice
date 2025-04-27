@@ -87,6 +87,10 @@ func (p *Pawn) Piece() *Piece {
 	return p.piece
 }
 
+func (p *Pawn) Cost(state *GameState) int {
+	return 1
+}
+
 type Rook struct {
 	piece *Piece
 }
@@ -109,6 +113,10 @@ func (r *Rook) Type() PieceType {
 
 func (r *Rook) Piece() *Piece {
 	return r.piece
+}
+
+func (r *Rook) Cost(state *GameState) int {
+	return 3
 }
 
 type Knight struct {
@@ -138,6 +146,10 @@ func (k *Knight) Piece() *Piece {
 	return k.piece
 }
 
+func (k *Knight) Cost(state *GameState) int {
+	return 2
+}
+
 type Bishop struct {
 	piece *Piece
 }
@@ -160,6 +172,10 @@ func (b *Bishop) Type() PieceType {
 
 func (b *Bishop) Piece() *Piece {
 	return b.piece
+}
+
+func (b *Bishop) Cost(state *GameState) int {
+	return 2
 }
 
 type Queen struct {
@@ -186,6 +202,10 @@ func (q *Queen) Piece() *Piece {
 	return q.piece
 }
 
+func (q *Queen) Cost(state *GameState) int {
+	return 4
+}
+
 type King struct {
 	piece *Piece
 }
@@ -208,4 +228,9 @@ func (k *King) Type() PieceType {
 
 func (k *King) Piece() *Piece {
 	return k.piece
+}
+
+func (k *King) Cost(state *GameState) int {
+	//!!!3PPA TODO add if(king in check) return 1
+	return 2
 }
