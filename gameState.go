@@ -8,6 +8,7 @@ type GameState struct {
 	possibleMoves  []Coordinates
 	currentBudget  int
 	leftoverBudget []bool
+	enPassant      Coordinates
 }
 
 func NewGameState() *GameState {
@@ -17,5 +18,6 @@ func NewGameState() *GameState {
 		selectedPiece:  Coordinates{-1, -1},
 		leftoverBudget: []bool{false, false},
 		currentBudget:  0,
+		enPassant:      Coordinates{-1, -1},
 	}
 }

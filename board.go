@@ -36,6 +36,10 @@ func (c *Coordinates) Valid() bool {
 	return c.col >= 0 && c.col < maxDimensions && c.row >= 0 && c.row < maxDimensions
 }
 
+func (c *Coordinates) Equal(col, row int) bool {
+	return c.col == col && c.row == row
+}
+
 type Movable interface {
 	Move(Coordinates)
 	GetPossibleMoves(*Board, Direction, Coordinates) []Coordinates
@@ -121,22 +125,22 @@ func (b *Board) Reset() {
 	b.fields[6][7] = &Knight{NewPiece(White)}
 	b.fields[7][7] = &Rook{NewPiece(White)}
 
-	b.fields[0][1] = &Pawn{NewPiece(Black)}
-	b.fields[1][1] = &Pawn{NewPiece(Black)}
-	b.fields[2][1] = &Pawn{NewPiece(Black)}
-	b.fields[3][1] = &Pawn{NewPiece(Black)}
-	b.fields[4][1] = &Pawn{NewPiece(Black)}
-	b.fields[5][1] = &Pawn{NewPiece(Black)}
-	b.fields[6][1] = &Pawn{NewPiece(Black)}
-	b.fields[7][1] = &Pawn{NewPiece(Black)}
-	b.fields[0][6] = &Pawn{NewPiece(White)}
-	b.fields[1][6] = &Pawn{NewPiece(White)}
-	b.fields[2][6] = &Pawn{NewPiece(White)}
-	b.fields[3][6] = &Pawn{NewPiece(White)}
-	b.fields[4][6] = &Pawn{NewPiece(White)}
-	b.fields[5][6] = &Pawn{NewPiece(White)}
-	b.fields[6][6] = &Pawn{NewPiece(White)}
-	b.fields[7][6] = &Pawn{NewPiece(White)}
+	b.fields[0][1] = NewPawn(Black)
+	b.fields[1][1] = NewPawn(Black)
+	b.fields[2][1] = NewPawn(Black)
+	b.fields[3][1] = NewPawn(Black)
+	b.fields[4][1] = NewPawn(Black)
+	b.fields[5][1] = NewPawn(Black)
+	b.fields[6][1] = NewPawn(Black)
+	b.fields[7][1] = NewPawn(Black)
+	b.fields[0][6] = NewPawn(White)
+	b.fields[1][6] = NewPawn(White)
+	b.fields[2][6] = NewPawn(White)
+	b.fields[3][6] = NewPawn(White)
+	b.fields[4][6] = NewPawn(White)
+	b.fields[5][6] = NewPawn(White)
+	b.fields[6][6] = NewPawn(White)
+	b.fields[7][6] = NewPawn(White)
 
 	b.kingPosition = [2]Coordinates{{3, 7}, {3, 0}}
 }
@@ -183,6 +187,8 @@ func (b *Board) MoveSelected(state *GameState, selectedMove Coordinates) {
 	for _, move := range moves {
 		if move.col == selectedMove.col && move.row == selectedMove.row {
 			state.possibleMoves = nil
+			handleEnPassant(dropped, state, move, b)
+
 			dropped.Piece().firstMove = false
 			b.fields[move.col][move.row] = b.fields[state.selectedPiece.col][state.selectedPiece.row]
 			if b.fields[move.col][move.row].Type() == KingType {
@@ -193,6 +199,33 @@ func (b *Board) MoveSelected(state *GameState, selectedMove Coordinates) {
 			state.selectedPiece.Reset()
 			break
 		}
+	}
+}
+
+func handleEnPassant(dropped MovableDrawable, state *GameState, move Coordinates, b *Board) {
+	if pawn, ok := dropped.(EnPassantable); ok {
+		if state.selectedPiece.row-move.row == 2 || state.selectedPiece.row-move.row == -2 {
+			if state.enPassant.Valid() {
+				b.fields[state.enPassant.col][state.enPassant.row].(EnPassantable).SetEnPassantable(false)
+			}
+			state.enPassant = move
+			pawn.SetEnPassantable(true)
+		} else {
+			//en passant taking
+			if move.col != state.selectedPiece.col && state.enPassant.Equal(move.col, state.selectedPiece.row) {
+				b.fields[move.col][state.selectedPiece.row] = nil
+			} else {
+				if state.enPassant.Valid() {
+					b.fields[state.enPassant.col][state.enPassant.row].(EnPassantable).SetEnPassantable(false)
+				}
+			}
+			state.enPassant.Reset()
+		}
+	} else {
+		if state.enPassant.Valid() {
+			b.fields[state.enPassant.col][state.enPassant.row].(EnPassantable).SetEnPassantable(false)
+		}
+		state.enPassant.Reset()
 	}
 }
 

@@ -18,29 +18,60 @@ func (p *Pawn) GetPossibleMoves(b *Board, direction Direction, current Coordinat
 	}
 
 	if current.row+moveDirection < maxDimensions && current.row+moveDirection >= 0 {
-		if b.fields[current.col][current.row+moveDirection] == nil {
-			moves = append(moves, Coordinates{current.col, current.row + moveDirection})
-			if p.piece.firstMove {
-				if b.fields[current.col][current.row+(moveDirection*2)] == nil {
-					moves = append(moves, Coordinates{current.col, current.row + (moveDirection * 2)})
+		moves = getPawnMoves(b, current, moveDirection, moves, p)
+		moves = getPawnTakes(current, b, moveDirection, p, moves)
+		moves = getEnPassant(b, current, moveDirection, moves, p)
+	}
 
-				}
-			}
-		}
-		if current.col-1 >= 0 && b.fields[current.col-1][current.row+moveDirection] != nil {
-			if b.fields[current.col-1][current.row+moveDirection].Piece().color != p.piece.color {
+	return FilterIllegalMoves(current, moves, b, p.piece.color)
+}
+
+func getEnPassant(b *Board, current Coordinates, moveDirection int, moves []Coordinates, p *Pawn) []Coordinates {
+	if current.col-1 >= 0 {
+		if other, ok := b.fields[current.col-1][current.row].(EnPassantable); ok {
+			if other.EnPassantable() {
 				moves = append(moves, Coordinates{current.col - 1, current.row + moveDirection})
 			}
 		}
-		if current.col+1 < maxDimensions && b.fields[current.col+1][current.row+moveDirection] != nil {
-			if b.fields[current.col+1][current.row+moveDirection].Piece().color != p.piece.color {
+
+	}
+
+	if current.col+1 < maxDimensions {
+		if other, ok := b.fields[current.col+1][current.row].(EnPassantable); ok {
+			if other.EnPassantable() {
 				moves = append(moves, Coordinates{current.col + 1, current.row + moveDirection})
 			}
 		}
+
 	}
 
-	//!!!3PPA todo add en passant
+	return moves
+}
 
+func getPawnTakes(current Coordinates, b *Board, moveDirection int, p *Pawn, moves []Coordinates) []Coordinates {
+	if current.col-1 >= 0 && b.fields[current.col-1][current.row+moveDirection] != nil {
+		if b.fields[current.col-1][current.row+moveDirection].Piece().color != p.piece.color {
+			moves = append(moves, Coordinates{current.col - 1, current.row + moveDirection})
+		}
+	}
+	if current.col+1 < maxDimensions && b.fields[current.col+1][current.row+moveDirection] != nil {
+		if b.fields[current.col+1][current.row+moveDirection].Piece().color != p.piece.color {
+			moves = append(moves, Coordinates{current.col + 1, current.row + moveDirection})
+		}
+	}
+	return moves
+}
+
+func getPawnMoves(b *Board, current Coordinates, moveDirection int, moves []Coordinates, p *Pawn) []Coordinates {
+	if b.fields[current.col][current.row+moveDirection] == nil {
+		moves = append(moves, Coordinates{current.col, current.row + moveDirection})
+		if p.piece.firstMove {
+			if b.fields[current.col][current.row+(moveDirection*2)] == nil {
+				moves = append(moves, Coordinates{current.col, current.row + (moveDirection * 2)})
+
+			}
+		}
+	}
 	return moves
 }
 
@@ -52,42 +83,10 @@ func (r *Rook) GetPossibleMoves(b *Board, direction Direction, current Coordinat
 }
 
 func getRookMoves(current Coordinates, b *Board, currentColor Color, moves []Coordinates) []Coordinates {
-	for i := 1; current.col+i < maxDimensions; i++ {
-		potentialField := b.fields[current.col+i][current.row]
-		if potentialField == nil || potentialField.Piece().color != currentColor {
-			moves = append(moves, Coordinates{current.col + i, current.row})
-		}
-		if potentialField != nil {
-			break
-		}
-	}
-	for i := 1; current.col-i >= 0; i++ {
-		potentialField := b.fields[current.col-i][current.row]
-		if potentialField == nil || potentialField.Piece().color != currentColor {
-			moves = append(moves, Coordinates{current.col - i, current.row})
-		}
-		if potentialField != nil {
-			break
-		}
-	}
-	for i := 1; current.row+i < maxDimensions; i++ {
-		potentialField := b.fields[current.col][current.row+i]
-		if potentialField == nil || potentialField.Piece().color != currentColor {
-			moves = append(moves, Coordinates{current.col, current.row + i})
-		}
-		if potentialField != nil {
-			break
-		}
-	}
-	for i := 1; current.row-i >= 0; i++ {
-		potentialField := b.fields[current.col][current.row-i]
-		if potentialField == nil || potentialField.Piece().color != currentColor {
-			moves = append(moves, Coordinates{current.col, current.row - i})
-		}
-		if potentialField != nil {
-			break
-		}
-	}
+	moves = append(moves, GetMovesLeft(current, currentColor, b)...)
+	moves = append(moves, GetMovesRight(current, currentColor, b)...)
+	moves = append(moves, GetMovesDown(current, currentColor, b)...)
+	moves = append(moves, GetMovesUp(current, currentColor, b)...)
 
 	return moves
 }
@@ -165,37 +164,19 @@ func (b *Bishop) GetPossibleMoves(board *Board, direction Direction, current Coo
 }
 
 func getBishopMoves(current Coordinates, board *Board, currentColor Color, moves []Coordinates) []Coordinates {
-	for i := 1; current.col+i < maxDimensions && current.row+i < maxDimensions; i++ {
-		potentialField := board.fields[current.col+i][current.row+i]
+	moves = getDiagonalMoves(1, 1, current, board, currentColor, moves)
+	moves = getDiagonalMoves(-1, -1, current, board, currentColor, moves)
+	moves = getDiagonalMoves(1, -1, current, board, currentColor, moves)
+	moves = getDiagonalMoves(-1, 1, current, board, currentColor, moves)
+
+	return moves
+}
+
+func getDiagonalMoves(colModifier, rowModifier int, current Coordinates, board *Board, currentColor Color, moves []Coordinates) []Coordinates {
+	for i := 1; current.col+i*colModifier >= 0 && current.col+i*colModifier < maxDimensions && current.row+i*rowModifier >= 0 && current.row+i*rowModifier < maxDimensions; i++ {
+		potentialField := board.fields[current.col+i*colModifier][current.row+i*rowModifier]
 		if potentialField == nil || potentialField.Piece().color != currentColor {
-			moves = append(moves, Coordinates{current.col + i, current.row + i})
-		}
-		if potentialField != nil {
-			break
-		}
-	}
-	for i := 1; current.col-i >= 0 && current.row-i >= 0; i++ {
-		potentialField := board.fields[current.col-i][current.row-i]
-		if potentialField == nil || potentialField.Piece().color != currentColor {
-			moves = append(moves, Coordinates{current.col - i, current.row - i})
-		}
-		if potentialField != nil {
-			break
-		}
-	}
-	for i := 1; current.col+i < maxDimensions && current.row-i >= 0; i++ {
-		potentialField := board.fields[current.col+i][current.row-i]
-		if potentialField == nil || potentialField.Piece().color != currentColor {
-			moves = append(moves, Coordinates{current.col + i, current.row - i})
-		}
-		if potentialField != nil {
-			break
-		}
-	}
-	for i := 1; current.col-i >= 0 && current.row+i < maxDimensions; i++ {
-		potentialField := board.fields[current.col-i][current.row+i]
-		if potentialField == nil || potentialField.Piece().color != currentColor {
-			moves = append(moves, Coordinates{current.col - i, current.row + i})
+			moves = append(moves, Coordinates{current.col + i*colModifier, current.row + i*rowModifier})
 		}
 		if potentialField != nil {
 			break
@@ -266,7 +247,7 @@ func (k *King) GetPossibleMoves(b *Board, direction Direction, current Coordinat
 		}
 	}
 
-	return moves
+	return FilterIllegalMoves(current, moves, b, currentColor)
 }
 
 func FilterIllegalMoves(position Coordinates, moves []Coordinates, board *Board, color Color) []Coordinates {
@@ -562,3 +543,77 @@ func AttackedByRookQueen(kingPosition, freeField, blockedField Coordinates, boar
 
 	return attacked
 }
+
+func GetMovesUp(c Coordinates, color Color, b *Board) []Coordinates {
+	var fields []Coordinates
+	row := c.row - 1
+
+	for row >= 0 {
+		field := b.fields[c.col][row]
+		if field == nil || field.Piece().color != color {
+			fields = append(fields, Coordinates{c.col, row})
+		}
+		if field != nil {
+			break
+		}
+		row--
+	}
+
+	return fields
+}
+
+func GetMovesDown(c Coordinates, color Color, b *Board) []Coordinates {
+	var fields []Coordinates
+	row := c.row + 1
+
+	for row < maxDimensions {
+		field := b.fields[c.col][row]
+		if field == nil || field.Piece().color != color {
+			fields = append(fields, Coordinates{c.col, row})
+		}
+		if field != nil {
+			break
+		}
+		row++
+	}
+
+	return fields
+}
+
+func GetMovesLeft(c Coordinates, color Color, b *Board) []Coordinates {
+	var fields []Coordinates
+	col := c.col - 1
+
+	for col >= 0 {
+		field := b.fields[col][c.row]
+		if field == nil || field.Piece().color != color {
+			fields = append(fields, Coordinates{col, c.row})
+		}
+		if field != nil {
+			break
+		}
+		col--
+	}
+
+	return fields
+}
+
+func GetMovesRight(c Coordinates, color Color, b *Board) []Coordinates {
+	var fields []Coordinates
+	col := c.col + 1
+
+	for col < maxDimensions {
+		field := b.fields[col][c.row]
+		if field == nil || field.Piece().color != color {
+			fields = append(fields, Coordinates{col, c.row})
+		}
+		if field != nil {
+			break
+		}
+		col++
+	}
+
+	return fields
+}
+
+//func validMove

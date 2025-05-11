@@ -63,8 +63,18 @@ func (p *Piece) SetDragOffset(x, y int) {
 	p.dragOffset = Offset{x, y}
 }
 
+type EnPassantable interface {
+	EnPassantable() bool
+	SetEnPassantable(bool)
+}
+
 type Pawn struct {
-	piece *Piece
+	piece         *Piece
+	enPassantable bool
+}
+
+func NewPawn(c Color) *Pawn {
+	return &Pawn{piece: NewPiece(c), enPassantable: false}
 }
 
 func (p *Pawn) Move(Coordinates) {
@@ -77,6 +87,14 @@ func (p *Pawn) Draw(screen *ebiten.Image, x int, y int) {
 	}
 
 	p.piece.Draw(screen, x, y, image)
+}
+
+func (p *Pawn) EnPassantable() bool {
+	return p.enPassantable
+}
+
+func (p *Pawn) SetEnPassantable(value bool) {
+	p.enPassantable = value
 }
 
 func (p *Pawn) Type() PieceType {
